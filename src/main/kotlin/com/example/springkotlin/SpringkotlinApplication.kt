@@ -2,8 +2,11 @@ package com.example.springkotlin
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @SpringBootApplication
@@ -21,11 +24,40 @@ read-only, using the val keyword*/
 data class Message(val id: String?, val text: String)
 
 @RestController
-class MessageController {
+class MessageController(val service: MessageService) {
     @GetMapping("/")
-    fun index() = listOf(
-        Message("1", "Hello!"),
-        Message("2", "Bonjour!"),
-        Message("3", "Privet!"),
-    )
+    fun index(): List<Message> = service.findMessages()
+
+    @PostMapping("/")
+    fun post(@RequestBody message: Message) {
+        service.save(message)
+    }
 }
+
+@Service
+class MessageService(val db: JdbcTemplate) {
+    /*
+     According to the Kotlin convention, if the last parameter of
+     a function is a function, then a lambda expression passed as the
+     corresponding argument can be placed outside the parentheses.
+     db.query("...") { ... }
+    */
+    fun findMessages(): List<Message> = db.query("select * from messages") { response, _ ->
+        Message(response.getString("id"), response.getString("text"))
+    }
+
+    fun save(message: Message) {
+        db.update(
+            "insert into messages values ( ?, ? )", message.id, message.text
+        )
+    }
+}
+
+
+
+
+
+
+
+
+
