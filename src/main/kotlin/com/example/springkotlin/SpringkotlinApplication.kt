@@ -49,6 +49,11 @@ class MessageService(val db: JdbcTemplate) {
     }
 
     fun save(message: Message) {
+        /*
+        If the expression to the left of ?: is not null,
+        the Elvis operator returns it; otherwise, it returns
+        the expression to the right.
+        */
         val id = message.id ?: randomUUID().toString()
         db.update(
             "insert into messages values ( ?, ? )", id, message.text
