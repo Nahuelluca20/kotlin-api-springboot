@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
+import java.util.UUID.*
 
 @SpringBootApplication
 class SpringkotlinApplication
@@ -47,8 +49,9 @@ class MessageService(val db: JdbcTemplate) {
     }
 
     fun save(message: Message) {
+        val id = message.id ?: randomUUID().toString()
         db.update(
-            "insert into messages values ( ?, ? )", message.id, message.text
+            "insert into messages values ( ?, ? )", id, message.text
         )
     }
 }
