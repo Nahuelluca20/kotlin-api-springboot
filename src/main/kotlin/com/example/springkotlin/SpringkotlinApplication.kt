@@ -1,5 +1,6 @@
 package com.example.springkotlin
 
+import org.springframework.jdbc.core.query
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+
+import org.springframework.web.bind.annotation.PathVariable
 import java.util.*
 import java.util.UUID.*
 
@@ -30,11 +33,17 @@ class MessageController(val service: MessageService) {
     @GetMapping("/")
     fun index(): List<Message> = service.findMessages()
 
+
+    @GetMapping("/{id}")
+    fun index(@PathVariable id: String): List<Message> =
+        service.findMessageById(id)
+
     @PostMapping("/")
     fun post(@RequestBody message: Message) {
         service.save(message)
     }
 }
+
 
 @Service
 class MessageService(val db: JdbcTemplate) {
@@ -47,6 +56,11 @@ class MessageService(val db: JdbcTemplate) {
     fun findMessages(): List<Message> = db.query("select * from messages") { response, _ ->
         Message(response.getString("id"), response.getString("text"))
     }
+
+    fun findMessageById(id: String): List<Message> =
+        db.query("select * from messages where id = ?", id) { response, _ ->
+            Message(response.getString("id"), response.getString("text"))
+        }
 
     fun save(message: Message) {
         /*
